@@ -156,8 +156,9 @@ extern "C" {
 
 /* Alias RTE_LIBRTE_ETHDEV_DEBUG for backward compatibility. */
 #ifdef RTE_LIBRTE_ETHDEV_DEBUG
-#define RTE_ETHDEV_DEBUG_RX
-#define RTE_ETHDEV_DEBUG_TX
+/* disable DEBUG for sure to optimize latency */
+//#define RTE_ETHDEV_DEBUG_RX
+//#define RTE_ETHDEV_DEBUG_TX
 #endif
 
 #include <rte_compat.h>
@@ -5356,7 +5357,8 @@ rte_eth_rx_burst(uint16_t port_id, uint16_t queue_id,
 	}
 #endif
 
-	rte_ethdev_trace_rx_burst(port_id, queue_id, (void **)rx_pkts, nb_rx);
+	/* disable trace call to optimize latency */
+	//rte_ethdev_trace_rx_burst(port_id, queue_id, (void **)rx_pkts, nb_rx);
 	return nb_rx;
 }
 
@@ -5679,7 +5681,8 @@ rte_eth_tx_burst(uint16_t port_id, uint16_t queue_id,
 
 	nb_pkts = p->tx_pkt_burst(qd, tx_pkts, nb_pkts);
 
-	rte_ethdev_trace_tx_burst(port_id, queue_id, (void **)tx_pkts, nb_pkts);
+	/* disable trace call to optimize latency */
+	//rte_ethdev_trace_tx_burst(port_id, queue_id, (void **)tx_pkts, nb_pkts);
 	return nb_pkts;
 }
 
