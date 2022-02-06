@@ -113,31 +113,25 @@ lcore_main(void)
 			rte_lcore_id());
 
 	/* Run until the application is quit or killed. */
+	port = 1 // fixed forwarding direction 1 -> 0 (unidirectional!)
 	for (;;) {
-		/*
-		 * Receive packets on a port and forward them on the paired
-		 * port. The mapping is 0 -> 1, 1 -> 0, 2 -> 3, 3 -> 2, etc.
-		 */
-		RTE_ETH_FOREACH_DEV(port) {
+		/* Get burst of RX packets, from first port of pair. */
+		struct rte_mbuf *bufs[BURST_SIZE];
+		const uint16_t nb_rx = rte_eth_rx_burst(port, 0,
+				bufs, BURST_SIZE);
 
-			/* Get burst of RX packets, from first port of pair. */
-			struct rte_mbuf *bufs[BURST_SIZE];
-			const uint16_t nb_rx = rte_eth_rx_burst(port, 0,
-					bufs, BURST_SIZE);
+		if (unlikely(nb_rx == 0))
+			continue;
 
-			if (unlikely(nb_rx == 0))
-				continue;
+		/* Send burst of TX packets, to second port of pair. */
+		const uint16_t nb_tx = rte_eth_tx_burst(port ^ 1, 0,
+				bufs, nb_rx);
 
-			/* Send burst of TX packets, to second port of pair. */
-			const uint16_t nb_tx = rte_eth_tx_burst(port ^ 1, 0,
-					bufs, nb_rx);
-
-			/* Free any unsent packets. */
-			if (unlikely(nb_tx < nb_rx)) {
-				uint16_t buf;
-				for (buf = nb_tx; buf < nb_rx; buf++)
-					rte_pktmbuf_free(bufs[buf]);
-			}
+		/* Free any unsent packets. */
+		if (unlikely(nb_tx < nb_rx)) {
+			uint16_t buf;
+			for (buf = nb_tx; buf < nb_rx; buf++)
+				rte_pktmbuf_free(bufs[buf]);
 		}
 	}
 }
