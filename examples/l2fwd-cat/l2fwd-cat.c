@@ -113,7 +113,7 @@ lcore_main(void)
 			rte_lcore_id());
 
 	/* Run until the application is quit or killed. */
-	port = 1 // fixed forwarding direction 1 -> 0 (unidirectional!)
+	port = 1; // fixed forwarding direction 1 -> 0 (unidirectional!)
 	for (;;) {
 		/* Get burst of RX packets, from first port of pair. */
 		struct rte_mbuf *bufs[BURST_SIZE];
